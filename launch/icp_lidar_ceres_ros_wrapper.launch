@@ -1,0 +1,14 @@
+<launch>
+    <!--2d_lidars_scan yd_sick_lidar-->
+    <arg name="bag_file" default="yd_sick_lidar.bag"/>
+    <arg name="open_rviz" default="true"/>
+    <arg name="rviz_config" default="yd_sick_lidar.rviz"/>
+
+    <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find icp_lidar_ceres_ros_wrapper)/rviz/$(arg rviz_config)"/>
+    <node pkg="rosbag" type="play" name="player" args="-l $(find icp_lidar_ceres_ros_wrapper)/example/$(arg bag_file)"/>
+    <node pkg="icp_lidar_ceres_ros_wrapper" type="icp_lidar_ceres_ros_wrapper" name="icp_lidar_ceres_ros_wrapper" output="screen">
+        <param name="scan1" type="string" value="scan_sick"/>
+        <param name="scan2" type="string" value="scan_yd"/>
+        <param name="frame" type="string" value="laser"/>
+    </node>
+</launch>
