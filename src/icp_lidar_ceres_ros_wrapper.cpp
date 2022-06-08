@@ -72,7 +72,6 @@ void icp_lidar_ceres_ros_wrapper::run() {
             basescan_pub_.publish(basepoint);
 
             std::vector<float> ranges(n);
-            // float *ranges = new float[n];
             for(int i = 0; i < aligned_points.cols(); i++) {
                 double angle = atan2(aligned_points(1,i), aligned_points(0,i));
                 int index = (-angle_min_ - angle) / angle_increment_;
@@ -85,11 +84,12 @@ void icp_lidar_ceres_ros_wrapper::run() {
             result_laserscan.angle_increment = angle_increment_;
             result_laserscan.range_min = range_min_;
             result_laserscan.range_max = range_max_;
-            // for(int i = 0; i < ranges.size(); i++) result_laserscan.ranges[i] = ranges[i];
-            // for(int i=0; i<ranges.size(); i++) cout << result_laserscan.ranges[i] << ' ';
-            result_laserscan.ranges = ranges; // malloc(): memory corruption??
+            result_laserscan.set_ranges_size(n);
+            for(int i = 0; i < ranges.size(); i++) {
+                result_laserscan.ranges[i] = ranges[i];
+            }
+            // result_laserscan.ranges = ranges; // malloc(): memory corruption??
             aligned_scan_pub_.publish(result_laserscan); // scan publish
-            // delete[] ranges;
             scan1 = false; scan2 = false;
         }
         ros::spinOnce();

@@ -1,6 +1,6 @@
 <launch>
     <!--2d_lidars_scan yd_sick_lidar-->
-    <arg name="bag_file" default="yd_sick_lidar.bag"/>
+    <arg name="bag_file" default="yd_sick_lidar_out_1.bag"/>
     <arg name="open_rviz" default="true"/>
     <arg name="rviz_config" default="yd_sick_lidar.rviz"/>
 
