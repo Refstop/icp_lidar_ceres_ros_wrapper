@@ -13,7 +13,7 @@ icp_lidar_ceres_ros_wrapper::icp_lidar_ceres_ros_wrapper(): icp_lidar_ceres(), s
 void icp_lidar_ceres_ros_wrapper::Scan1Callback(const sensor_msgs::LaserScan::ConstPtr& msg) {
     this->reference_points.resize(1,2);
     std::vector<float> ranges = msg->ranges;
-    std::cout << "scan_sick.size(): " << ranges.size() << endl;
+    // std::cout << "scan_sick.size(): " << ranges.size() << endl;
     angle_max_ = msg->angle_max;
     angle_min_ = msg->angle_min;
     angle_increment_ = msg->angle_increment;
@@ -21,25 +21,57 @@ void icp_lidar_ceres_ros_wrapper::Scan1Callback(const sensor_msgs::LaserScan::Co
     range_max_ = msg->range_max;
     int row = 0;
     for(int i = 0; i < ranges.size(); i++) {
-        if(ranges[i] == 0) continue;
-        push_back_(this->reference_points, Vector2d(ranges[i]*cos(-angle_min_ - i*angle_increment_), ranges[i]*sin(-angle_min_ - i*angle_increment_)), row);
-        row++;
+        if(0 <= i && i <= ranges.size()) {
+            if(ranges[i] != 0) {
+                push_back_(this->reference_points, Vector2d(ranges[i]*cos(-angle_min_ - i*angle_increment_), ranges[i]*sin(-angle_min_ - i*angle_increment_)), row);
+                row++;
+            }
+        }
     }
     this->reference_points.transposeInPlace();
+    // string x_str = "", y_str = "";
+    // for(int i = 0; i < this->reference_points.cols(); i++) {
+    //     x_str = x_str + to_string(this->reference_points(0, i)) + ' ';
+    //     y_str = y_str + to_string(this->reference_points(1, i)) + ' ';
+    // }
+    // ofstream writeFile("scan_sick.txt");
+    // if(writeFile.is_open()) {
+    //     writeFile << x_str + "\n";
+    //     cout << x_str << endl;
+    //     writeFile << y_str;
+    //     cout << y_str << endl;
+    //     writeFile.close();
+    // }
     scan1 = true;
 }
 
 void icp_lidar_ceres_ros_wrapper::Scan2Callback(const sensor_msgs::LaserScan::ConstPtr& msg) {
     this->points_to_be_aligned.resize(1,2);
     std::vector<float> ranges = msg->ranges;
-    std::cout << "scan_yd.size(): " << ranges.size() << endl;
+    // std::cout << "scan_yd.size(): " << ranges.size() << endl;
     int row = 0;
+    int range_q = ranges.size()/4;
+    // cout << range_q << endl;
     for(int i = 0; i < ranges.size(); i++) {
-        if(ranges[i] == 0) continue;
-        push_back_(this->points_to_be_aligned, Vector2d(ranges[i]*cos(-angle_min_ - i*angle_increment_), ranges[i]*sin(-angle_min_ - i*angle_increment_)), row);
-        row++;
+        if(0 <= i && i <= range_q*2) {
+            if(ranges[i] != 0) {
+                push_back_(this->points_to_be_aligned, Vector2d(ranges[i]*cos(-angle_min_ - i*angle_increment_), ranges[i]*sin(-angle_min_ - i*angle_increment_)), row);
+                row++;
+            }
+        }
     }
     this->points_to_be_aligned.transposeInPlace();
+    // string x_str = "", y_str = "";
+    // for(int i = 0; i < this->points_to_be_aligned.cols(); i++) {
+    //     x_str = x_str + to_string(this->points_to_be_aligned(0, i)) + ' ';
+    //     y_str = y_str + to_string(this->points_to_be_aligned(1, i)) + ' ';
+    // }
+    // ofstream writeFile("scan_yd.txt");
+    // if(writeFile.is_open()) {
+    //     writeFile << x_str + "\n";
+    //     writeFile << y_str;
+    //     writeFile.close();
+    // }
     scan2 = true;
 }
 
@@ -71,25 +103,25 @@ void icp_lidar_ceres_ros_wrapper::run() {
             basepoint.channels = Channels;
             basescan_pub_.publish(basepoint);
 
-            std::vector<float> ranges(n);
-            for(int i = 0; i < aligned_points.cols(); i++) {
-                double angle = atan2(aligned_points(1,i), aligned_points(0,i));
-                int index = (-angle_min_ - angle) / angle_increment_;
-                ranges[index] = sqrt(pow(aligned_points(0,i), 2) + pow(aligned_points(1,i), 2));
-            }
-            // for(int i=0; i<ranges.size(); i++) cout << ranges[i] << ' ';
-            result_laserscan.header.frame_id = frame_str;
-            result_laserscan.angle_min = angle_min_;
-            result_laserscan.angle_max = angle_max_;
-            result_laserscan.angle_increment = angle_increment_;
-            result_laserscan.range_min = range_min_;
-            result_laserscan.range_max = range_max_;
-            result_laserscan.set_ranges_size(n);
-            for(int i = 0; i < ranges.size(); i++) {
-                result_laserscan.ranges[i] = ranges[i];
-            }
-            // result_laserscan.ranges = ranges; // malloc(): memory corruption??
-            aligned_scan_pub_.publish(result_laserscan); // scan publish
+            // std::vector<float> ranges(n);
+            // for(int i = 0; i < aligned_points.cols(); i++) {
+            //     double angle = atan2(aligned_points(1,i), aligned_points(0,i));
+            //     int index = (-angle_min_ - angle) / angle_increment_;
+            //     ranges[index] = sqrt(pow(aligned_points(0,i), 2) + pow(aligned_points(1,i), 2));
+            // }
+            // // for(int i=0; i<ranges.size(); i++) cout << ranges[i] << ' ';
+            // result_laserscan.header.frame_id = frame_str;
+            // result_laserscan.angle_min = angle_min_;
+            // result_laserscan.angle_max = angle_max_;
+            // result_laserscan.angle_increment = angle_increment_;
+            // result_laserscan.range_min = range_min_;
+            // result_laserscan.range_max = range_max_;
+            // result_laserscan.set_ranges_size(n);
+            // for(int i = 0; i < ranges.size(); i++) {
+            //     result_laserscan.ranges[i] = ranges[i];
+            // }
+            // // result_laserscan.ranges = ranges; // malloc(): memory corruption??
+            // aligned_scan_pub_.publish(result_laserscan); // scan publish
             scan1 = false; scan2 = false;
         }
         ros::spinOnce();
